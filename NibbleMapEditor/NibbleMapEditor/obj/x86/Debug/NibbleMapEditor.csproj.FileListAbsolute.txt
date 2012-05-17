@@ -1,0 +1,10 @@
+F:\Documents\xnaprojects\NibbleMapEditor\NibbleMapEditor\NibbleMapEditor\bin\x86\Debug\NibbleMapEditor.exe
+F:\Documents\xnaprojects\NibbleMapEditor\NibbleMapEditor\NibbleMapEditor\bin\x86\Debug\NibbleMapEditor.pdb
+F:\Documents\xnaprojects\NibbleMapEditor\NibbleMapEditor\NibbleMapEditor\bin\x86\Debug\NibLib.dll
+F:\Documents\xnaprojects\NibbleMapEditor\NibbleMapEditor\NibbleMapEditor\bin\x86\Debug\NibLib.pdb
+F:\Documents\xnaprojects\NibbleMapEditor\NibbleMapEditor\NibbleMapEditor\obj\x86\Debug\ResolveAssemblyReference.cache
+F:\Documents\xnaprojects\NibbleMapEditor\NibbleMapEditor\NibbleMapEditor\obj\x86\Debug\Microsoft.Xna.Framework.RuntimeProfile.txt
+F:\Documents\xnaprojects\NibbleMapEditor\NibbleMapEditor\NibbleMapEditor\obj\x86\Debug\NibbleMapEditor.exe
+F:\Documents\xnaprojects\NibbleMapEditor\NibbleMapEditor\NibbleMapEditor\obj\x86\Debug\NibbleMapEditor.pdb
+F:\Documents\xnaprojects\NibbleMapEditor\NibbleMapEditor\NibbleMapEditor\bin\x86\Debug\Content\gfx\map.xnb
+F:\Documents\xnaprojects\NibbleMapEditor\NibbleMapEditor\NibbleMapEditor\bin\x86\Debug\Content\fonts\font.xnb
