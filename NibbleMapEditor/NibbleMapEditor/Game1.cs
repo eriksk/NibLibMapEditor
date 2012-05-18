@@ -10,6 +10,7 @@ using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Media;
 using NibLib.Maps;
 using NibbleMapEditor.Forms;
+using NibLib.IO;
 
 namespace NibbleMapEditor
 {
@@ -19,17 +20,15 @@ namespace NibbleMapEditor
         SpriteBatch spriteBatch;
 
         Map map;
-        List<MapLayer> layers = new List<MapLayer>();
-        MapLayer selectedLayer;
-        List<Ledge> ledges = new List<Ledge>();
-        MapSettings settings = new MapSettings();
-        int[,] grid = new int[64, 64];
 
         ListComponent<MapLayer> layerList;
         List<Button> buttons;
 
-        Texture2D mapTexture;
         Texture2D pixel;
+        TextureContainer texContainer;
+        LayerComponent layerCompo;
+
+        string path = @"C:\Users\Erik\Desktop\testmap.map";
 
         public Game1()
         {
@@ -43,6 +42,7 @@ namespace NibbleMapEditor
 
         protected override void Initialize()
         {
+            map = new Map(new List<MapLayer>(), new MapSettings(), new List<Ledge>(), new int[64,64]);
             base.Initialize();
         }
 
@@ -50,14 +50,18 @@ namespace NibbleMapEditor
         {
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
-            map = new Map(layers, settings, ledges, grid);
-            mapTexture = Content.Load<Texture2D>(@"gfx/map");
             pixel = new Texture2D(GraphicsDevice, 1, 1);
             pixel.SetData<Color>(new Color[] { Color.White });
 
-
-            layerList = new ListComponent<MapLayer>(16, 46, "Layers", layers).Load(Content, GraphicsDevice);
+            map.Load(Content);
+            
+            layerList = new ListComponent<MapLayer>(16, 46, "Layers", map.layers).Load(Content, GraphicsDevice);
             layerList.OnClickedEvent += new ListComponent<MapLayer>.OnClicked(layerList_OnClickedEvent);
+
+            texContainer = new TextureContainer(500, 200, @"gfx/map").Load(Content, GraphicsDevice);
+            texContainer.OnNewSource += new TextureContainer.OnNewSourceDelegate(texContainer_OnNewSource);
+
+            layerCompo = new LayerComponent().Load(Content, GraphicsDevice);
 
             buttons = new List<Button>();
 
@@ -69,21 +73,48 @@ namespace NibbleMapEditor
             btnRmLayer.OnClickedEvent += new Button.OnClicked(btnRmLayer_OnClickedEvent);
             buttons.Add(btnRmLayer);
 
+            Button btnSave = new Button(1280 - 300, 16, "Save").Load(Content, GraphicsDevice);
+            btnSave.OnClickedEvent += new Button.OnClicked(btnSave_OnClickedEvent);
+            buttons.Add(btnSave);
+
+            Button btnLoad = new Button(1280 - 150, 16, "Load").Load(Content, GraphicsDevice);
+            btnLoad.OnClickedEvent += new Button.OnClicked(btnLoad_OnClickedEvent);
+            buttons.Add(btnLoad);
+
+        }
+
+        void btnLoad_OnClickedEvent()
+        {
+            map = MapIO.Load(path);
+            LoadContent();
+        }
+
+        void btnSave_OnClickedEvent()
+        {
+            MapIO.Save(map, path);
+        }
+
+        void texContainer_OnNewSource(Rectangle source)
+        {
+            layerCompo.SetSource(source);
         }
 
         void btnRmLayer_OnClickedEvent()
         {
             layerList.DeleteSelected();
+            layerCompo.SetLayer(null);
         }
 
         void btnNewLayer_OnClickedEvent()
         {
-            layerList.AddNew(new MapLayer() { parallax = 1.0f, Name = "Layer" });
+            MapLayer ml = new MapLayer(new List<MapPart>(), 1f) { parallax = 1.0f, Name = "Layer" };
+            ml.Load(Content);
+            layerList.AddNew(ml);
         }
 
         void layerList_OnClickedEvent(MapLayer item)
         {
-            selectedLayer = item;
+            layerCompo.SetLayer(item);
         }
 
         protected override void Update(GameTime gameTime)
@@ -95,6 +126,8 @@ namespace NibbleMapEditor
 
             map.Update(dt);
             layerList.Update(dt);
+            texContainer.Update(dt);
+            layerCompo.Update(dt);
             foreach (Button b in buttons)
             {
                 b.Update();
@@ -114,11 +147,15 @@ namespace NibbleMapEditor
                 map.DrawLayer(spriteBatch, i);			 
 			}
 
+            layerCompo.Draw(spriteBatch);
+
             foreach (Button b in buttons)
             {
                 b.Draw(spriteBatch);
             }
             layerList.Draw(spriteBatch);
+
+            texContainer.Draw(spriteBatch);
             spriteBatch.End();
 
             base.Draw(gameTime);

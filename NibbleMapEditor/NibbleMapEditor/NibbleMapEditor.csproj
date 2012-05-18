@@ -74,10 +74,13 @@
   <ItemGroup>
     <Compile Include="Forms\Button.cs" />
     <Compile Include="Forms\ListComponent.cs" />
+    <Compile Include="Forms\LayerComponent.cs" />
+    <Compile Include="Forms\TextureContainer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Game1.cs" />
     <Compile Include="SBExtensions.cs" />
+    <Compile Include="Utils\Util.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Game.ico" />
