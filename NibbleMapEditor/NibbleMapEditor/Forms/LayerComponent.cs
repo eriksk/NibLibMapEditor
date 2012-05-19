@@ -41,7 +41,6 @@ namespace NibbleMapEditor.Forms
                 {
                     layer.parts.Add(new MapPart(Vector2.Zero, 0f, 1f) { Source = new Rectangle(0, 0, 64, 64) });
                 }
-                selectedPart = layer.parts.Count - 1;
             }
             else
             {
@@ -59,7 +58,7 @@ namespace NibbleMapEditor.Forms
 
         MouseState om, m;
         KeyboardState key, oldkey;
-        public void Update(float dt)
+        public void Update(float dt, Game1 game)
         {
             om = m;
             m = Mouse.GetState();
@@ -69,31 +68,28 @@ namespace NibbleMapEditor.Forms
 
             if (layer != null && key.IsKeyUp(Keys.Tab))
             {
-                if (selectedPart != -1)
+                if (selectedPart != -1 && key.IsKeyDown(Keys.LeftShift))
                 {
                     if (m.LeftButton == ButtonState.Pressed)
                     {
-                        if (key.IsKeyDown(Keys.LeftShift))
+                        if (key.IsKeyDown(Keys.LeftControl))
                         {
-                            // rotate
-                            layer.parts[selectedPart].rotation += (m.Y - om.Y) * 0.005f;
+                            // move all
+                            for (int i = 0; i < layer.parts.Count; i++)
+                            {
+                                layer.parts[i].position += new Vector2(m.X - om.X, m.Y - om.Y);
+                            }
                         }
                         else
                         {
-                            if (key.IsKeyDown(Keys.LeftControl))
-                            {
-                                // move all
-                                for (int i = 0; i < layer.parts.Count; i++)
-                                {
-                                    layer.parts[i].position += new Vector2(m.X - om.X, m.Y - om.Y);
-                                }
-                            }
-                            else
-                            {
-                                // move
-                                layer.parts[selectedPart].position += new Vector2(m.X - om.X, m.Y - om.Y);
-                            }
+                            // move
+                            layer.parts[selectedPart].position += new Vector2(m.X - om.X, m.Y - om.Y);
                         }
+                    }
+                    if(m.RightButton == ButtonState.Pressed)
+                    {
+                        // rotate
+                        layer.parts[selectedPart].rotation += (m.Y - om.Y) * 0.005f;                    
                     }
                     if (m.MiddleButton == ButtonState.Pressed)
                     {
@@ -141,7 +137,7 @@ namespace NibbleMapEditor.Forms
                         for (int i = layer.parts.Count - 1; i >= 0; i--)
                         {
                             MapPart fp = layer.parts[i];
-                            if (Util.RotateRectangle(fp.origin, fp.position, fp.scale, fp.rotation).Contains(m.X, m.Y))
+                            if (Util.RotateRectangle(fp.origin, fp.position, fp.scale, fp.rotation).Contains(game.MPos.X, game.MPos.Y))
                             {
                                 selectedPart = i;
                                 break;
@@ -195,7 +191,7 @@ namespace NibbleMapEditor.Forms
             }
         }
 
-        public void Draw(SpriteBatch sb)
+        public void Draw(SpriteBatch sb, Game1 game)
         {
             if (layer != null)
             {
@@ -212,7 +208,7 @@ namespace NibbleMapEditor.Forms
                     for (int i = layer.parts.Count - 1; i >= 0; i--)
                     {
                         MapPart fp = layer.parts[i];
-                        if (Util.RotateRectangle(fp.origin, fp.position, fp.scale, fp.rotation).Contains(m.X, m.Y))
+                        if (Util.RotateRectangle(fp.origin, fp.position, fp.scale, fp.rotation).Contains(game.MPos.X, game.MPos.Y))
                         {
                             sb.Draw(pixel, Util.RotateRectangle(fp.origin, fp.position, fp.scale, fp.rotation), Color.Red * 0.1f);
                             sb.DrawOutline(pixel, Util.RotateRectangle(fp.origin, fp.position, fp.scale, fp.rotation), Color.Red * 0.8f);

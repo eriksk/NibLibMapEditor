@@ -11,9 +11,16 @@ using Microsoft.Xna.Framework.Media;
 using NibLib.Maps;
 using NibbleMapEditor.Forms;
 using NibLib.IO;
+using NibLib.Cameras;
 
 namespace NibbleMapEditor
 {
+    enum EditMode
+    {
+        Parts,
+        Collision
+    }
+
     public class Game1 : Microsoft.Xna.Framework.Game
     {
         GraphicsDeviceManager graphics;
@@ -27,6 +34,12 @@ namespace NibbleMapEditor
         Texture2D pixel;
         TextureContainer texContainer;
         LayerComponent layerCompo;
+        CollisionComponent collisionCompo;
+
+        EditMode mode = EditMode.Parts;
+
+        Camera2D cam;
+        SpriteFont font;
 
         string path = @"C:\Users\Erik\Desktop\testmap.map";
 
@@ -52,6 +65,10 @@ namespace NibbleMapEditor
 
             pixel = new Texture2D(GraphicsDevice, 1, 1);
             pixel.SetData<Color>(new Color[] { Color.White });
+            font = Content.Load<SpriteFont>(@"fonts/font");
+
+            cam = new Camera2D(new Vector2(1280, 720) / 2f);
+            cam.speed = 0.2f;
 
             map.Load(Content);
             
@@ -62,6 +79,9 @@ namespace NibbleMapEditor
             texContainer.OnNewSource += new TextureContainer.OnNewSourceDelegate(texContainer_OnNewSource);
 
             layerCompo = new LayerComponent().Load(Content, GraphicsDevice);
+
+            collisionCompo = new CollisionComponent().Load(Content, GraphicsDevice);
+            collisionCompo.Set(map.ledges, map.grid);
 
             buttons = new List<Button>();
 
@@ -117,21 +137,60 @@ namespace NibbleMapEditor
             layerCompo.SetLayer(item);
         }
 
+        public Point MPos
+        {
+            get 
+            { 
+                return new Point(
+                    (int)(m.X + cam.position.X - cam.origin.X),
+                    (int)(m.Y + cam.position.Y - cam.origin.Y));
+            }
+        }
+
+        MouseState m, om;
+        KeyboardState key;
         protected override void Update(GameTime gameTime)
         {
+            om = m;
+            m = Mouse.GetState();
+            key = Keyboard.GetState();
+
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed)
                 this.Exit();
+
+            if (mode == EditMode.Parts && key.IsKeyDown(Keys.D1))
+            {
+                mode = EditMode.Collision;
+            }
+            if (mode == EditMode.Collision && key.IsKeyDown(Keys.D2))
+            {
+                mode = EditMode.Parts;
+            }
 
             float dt = (float)gameTime.ElapsedGameTime.TotalMilliseconds;
 
             map.Update(dt);
-            layerList.Update(dt);
-            texContainer.Update(dt);
-            layerCompo.Update(dt);
-            foreach (Button b in buttons)
+
+            if (mode == EditMode.Parts)
             {
-                b.Update();
+                layerList.Update(dt);
+                texContainer.Update(dt);
+                layerCompo.Update(dt, this);
             }
+            else if (mode == EditMode.Collision)
+            {
+                collisionCompo.Update(dt, this);
+                foreach (Button b in buttons)
+                {
+                    b.Update();
+                }
+            }
+
+            if (m.MiddleButton == ButtonState.Pressed && key.IsKeyUp(Keys.LeftShift))
+            {
+                cam.Move(-new Vector2(m.X - om.X, m.Y - om.Y));
+            }
+            cam.Update(dt);
 
             base.Update(gameTime);
         }
@@ -140,22 +199,29 @@ namespace NibbleMapEditor
         {
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
-            spriteBatch.Begin();
-
+            spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, null, null, null, null, cam.Matrix);
             for (int i = 0; i < map.layers.Count; i++)
 			{
                 map.DrawLayer(spriteBatch, i);			 
 			}
 
-            layerCompo.Draw(spriteBatch);
+            collisionCompo.Draw(spriteBatch, this);
+            layerCompo.Draw(spriteBatch, this); 
+            spriteBatch.Draw(pixel, new Rectangle(MPos.X, MPos.Y, 8, 8), Color.Red);
+            spriteBatch.End();
+            
+            // GUI
+            
+            spriteBatch.Begin();
 
             foreach (Button b in buttons)
             {
                 b.Draw(spriteBatch);
             }
             layerList.Draw(spriteBatch);
-
             texContainer.Draw(spriteBatch);
+
+            spriteBatch.DrawString(font, mode.ToString(), new Vector2(5, 5), Color.White);
             spriteBatch.End();
 
             base.Draw(gameTime);

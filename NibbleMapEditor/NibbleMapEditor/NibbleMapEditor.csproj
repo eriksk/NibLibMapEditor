@@ -73,6 +73,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Forms\Button.cs" />
+    <Compile Include="Forms\CollisionComponent.cs" />
     <Compile Include="Forms\ListComponent.cs" />
     <Compile Include="Forms\LayerComponent.cs" />
     <Compile Include="Forms\TextureContainer.cs" />
